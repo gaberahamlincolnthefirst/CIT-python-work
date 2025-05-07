@@ -1,59 +1,92 @@
-#gabe duponte planetary waight calculator.
-import pickle
-def importdb():
-    dictPlanetaryHistory = {}
-   # this dict saves the data for later
-    eof = False
-    try:
-        input_file = open('gdPlanetaryWeights.db', 'rb')
-        while not eof:
-            #egnores the program if the file does not exist
-            try:
-                dictPlanetaryHistory = pickle.load(input_file)
-            except EOFError:
-                eof = True
-        input_file.close()
-    except FileNotFoundError:
-        pass
-    return dictPlanetaryHistory
+import csv
+
+def getDataInput():
+    listData = []
+
+    with open('RealEstateData.csv', 'r') as file:
+        salesData = csv.reader(file)
+        next(salesData)
+        for row in salesData:
+            listData.append(row)
+    #print(listData)
+    return listData
+
+def getMedian(lstList1):
+   lstList1.sort()
+   iListLength = len(lstList1)
 
 
+   if iListLength % 2 == 0:
+       print(f"The length if the list is even: {iListLength}")
+       fMedianRight = lstList1[iListLength // 2]
+       fMedianLeft = lstList1[(iListLength // 2) - 1]
+
+
+       fMedian = (fMedianLeft + fMedianRight) / 2
+
+   else:
+       print(f"The length if the list is odd: {iListLength}")
+       fMedian = lstList1[iListLength // 2]
+
+
+   return fMedian
 def main():
-    dictPersonsWaight = {}
-    dictPlanetConv = {
-            "Mercury:" :0.38,
-            "Venus:"   :0.91,
-            "Moon:"    :0.165,
-            "Mars:"    :0.38,
-            "Jupiter:" :2.34,
-            "Saturn:"  :0.93,
-            "Uranus:"  :0.92,
-            "Neptune:" :1.12,
-            "Pluto:"   :0.066}
-    # ask for the history/data that we preveusly put into the pickle file
-    dictPlanetaryHistory = importdb()
-    YesorNo = input("would you like to see the history y/n: ").lower()
-    if YesorNo == 'y':
-        for name, dictWeights in dictPlanetaryHistory.items():
-            print(f"{name}, here are your weights on Solar System's planets")
-            # print(key, value)
-            for planet, weight in dictWeights.items():
-                print(f"Weight on {planet:10s} {weight:10,.2f}")
-    while True:
-       #loops through name and waight functions
-        sName = input("whats your name (enter kay to quit): ", ).title()
-        if not sName: break
-        #checks for reoccurnces in name unput
-        if sName in dictPlanetaryHistory: print("is already in the history file. Enter a unique name.")
-        if sName not in dictPlanetaryHistory:
-            fWeight = float(input(" What is your weight: "))
-           # calculates your waight compared to planets
-            for planet, factor in dictPlanetConv.items():
-                fCalculatedWeight = fWeight * factor
-                dictPersonsWaight[planet] = fCalculatedWeight
-                dictPlanetaryHistory[sName] = dictPersonsWaight
-                print(f"{planet:10s}{fCalculatedWeight:10,.2f}")
-    # dumps information into our pickle file
-    with open("gdPlanetaryWeights.db", "wb") as file:
-        pickle.dump(dictPlanetaryHistory, file)
+   lstData = getDataInput() # can I just say i had the hardest time figuring out how to bring the getDataInput into the main() without errors, it was painfull
+   lstPrices = []
+
+   dictPropertyType = {}
+   dictCity = {}
+   dictZip = {}
+
+   for row in lstData:
+
+       sCity = row[1]
+       sPType = row[7]
+       fPrice = float(row[8])
+
+       sZip = row[2]
+
+
+       if sPType in dictPropertyType:
+           dictPropertyType[sPType] += fPrice
+       else:
+           dictPropertyType[sPType] = fPrice
+
+
+       if sCity in dictCity:
+           dictCity[sCity] += fPrice
+       else:
+           dictCity[sCity] = fPrice
+
+
+       if sZip in dictZip:
+           dictZip[sZip] += fPrice
+       else:
+           dictZip[sZip] = fPrice
+
+
+       lstPrices.append(fPrice)
+
+   print("Summary by Property Type:")
+   for propertyType, fTotal in dictPropertyType.items():
+
+       print(f"{propertyType:20s}{fTotal:15,.2f}")
+
+   print("Summary by City:")
+   for sCity, fTotal in dictCity.items():
+       print(f"{sCity:20s}{fTotal:15,.2f}")
+
+
+   print(f"{'The min is: ':20s}{min(lstPrices):15,.2f}")
+
+   print(f"{'The max is: ':20s}{max(lstPrices):15,.2f}")
+
+   print(f"{'The sum is: ':20s}{sum(lstPrices):15,.2f}")
+
+   print(f"{'The average is ':20s}{sum(lstPrices) / len(lstPrices):15,.2f}")
+
+   print(f"{'The Median is ':20s}{getMedian(lstPrices):15,.2f}")
+
+
 main()
+
