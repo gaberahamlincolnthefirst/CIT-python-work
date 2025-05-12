@@ -1,92 +1,134 @@
+
+import sqlite3
 import csv
 
-def getDataInput():
-    listData = []
+dbConnection = sqlite3.connect("myDatabase.db")
+dbCursor = dbConnection.cursor()
 
-    with open('RealEstateData.csv', 'r') as file:
-        salesData = csv.reader(file)
-        next(salesData)
-        for row in salesData:
-            listData.append(row)
-    #print(listData)
-    return listData
+try:
+    sCreateTable = "Create Employee Table(EmployeeID int, Name text)"
+    dbConnection.execute(sCreateTable)
+    print(sCreateTable)
 
-def getMedian(lstList1):
-   lstList1.sort()
-   iListLength = len(lstList1)
+    sCreateTable = "Create Pay Table(EmployeeID int, year int, Earnings real)"
+    dbConnection.execute(sCreateTable), print(sCreateTable)
 
+    sCreateTable = "Create SocialSecurity Table(Year int, Minimum real)"
+    dbConnection.execute(sCreateTable), print(sCreateTable)
+    dbConnection.commit()
 
-   if iListLength % 2 == 0:
-       print(f"The length if the list is even: {iListLength}")
-       fMedianRight = lstList1[iListLength // 2]
-       fMedianLeft = lstList1[(iListLength // 2) - 1]
+except sqlite3.OperationalError: print("Could not create table")
 
 
-       fMedian = (fMedianLeft + fMedianRight) / 2
 
-   else:
-       print(f"The length if the list is odd: {iListLength}")
-       fMedian = lstList1[iListLength // 2]
+sInsertPay = "INSERT INTO Pay(EmployeeID, year, Earnings) VALUES("
+sInsertPayReset = sInsertPay
 
+with open("Pay.txt", "r") as file:
 
-   return fMedian
-def main():
-   lstData = getDataInput() # can I just say i had the hardest time figuring out how to bring the getDataInput into the main() without errors, it was painfull
-   lstPrices = []
+    iRows = 0
 
-   dictPropertyType = {}
-   dictCity = {}
-   dictZip = {}
+    reader = csv.reader(file)
 
-   for row in lstData:
+    next(reader)
 
-       sCity = row[1]
-       sPType = row[7]
-       fPrice = float(row[8])
+    for row in reader:
 
-       sZip = row[2]
+        sInsertPay += f"{row[0]}, {row[1]}, {row[2]})"
+        print(sInsertPay)
 
+        try:
+            dbConnection.execute(sInsertPay)
+            iRows += 1
 
-       if sPType in dictPropertyType:
-           dictPropertyType[sPType] += fPrice
-       else:
-           dictPropertyType[sPType] = fPrice
+        except sqlite3.OperationalError:
+            print("Could not insert")
 
+        sInsertPay = sInsertPayReset
 
-       if sCity in dictCity:
-           dictCity[sCity] += fPrice
-       else:
-           dictCity[sCity] = fPrice
+    dbConnection.commit()
+    print(f"Rows Loaded: {iRows}")
 
 
-       if sZip in dictZip:
-           dictZip[sZip] += fPrice
-       else:
-           dictZip[sZip] = fPrice
+sInsertSocialSecurityMinimum = "INSERT INTO SocialSecurityMinimum(Year, Minimum) VALUES("
+sInsertSocialSecurityMinimumReset = sInsertSocialSecurityMinimum
+
+with open("SocialSecurityMinimum.txt", "r") as file:
+
+    iRows = 0
+    reader = csv.reader(file)
+
+    next(reader)
+
+    for row in reader:
 
 
-       lstPrices.append(fPrice)
+        sInsertSocialSecurityMinimum += f"{row[0]}, {row[1]})"
+        print(sInsertSocialSecurityMinimum)
 
-   print("Summary by Property Type:")
-   for propertyType, fTotal in dictPropertyType.items():
+        try:
+            dbConnection.execute(sInsertSocialSecurityMinimum)
+            iRows += 1
 
-       print(f"{propertyType:20s}{fTotal:15,.2f}")
+        except sqlite3.OperationalError: print("Could not insert")
 
-   print("Summary by City:")
-   for sCity, fTotal in dictCity.items():
-       print(f"{sCity:20s}{fTotal:15,.2f}")
+        sInsertSocialSecurityMinimum = sInsertSocialSecurityMinimumReset
 
-
-   print(f"{'The min is: ':20s}{min(lstPrices):15,.2f}")
-
-   print(f"{'The max is: ':20s}{max(lstPrices):15,.2f}")
-
-   print(f"{'The sum is: ':20s}{sum(lstPrices):15,.2f}")
-
-   print(f"{'The average is ':20s}{sum(lstPrices) / len(lstPrices):15,.2f}")
-
-   print(f"{'The Median is ':20s}{getMedian(lstPrices):15,.2f}")
+    dbConnection.commit()
+    print(f"Rows Loaded: {iRows}")
 
 
-main()
+sInsertEmployee = "insert into Emoloyee(EmployeeID, Name) VALUES("
+sInsertEmployeeReset = sInsertEmployee
 
+with open("Employee.txt", "r") as file:
+
+    iRows = 0
+
+    reader = csv.reader(file)
+
+    next(reader)
+
+    for row in reader:
+
+        sInsertEmployee += f"{row[0]}, '{row[1]}')"
+        print(sInsertEmployee)
+
+        try:
+            dbConnection.execute(sInsertEmployee)
+            iRows += 1
+
+        except sqlite3.OperationalError: print("Could not insert")
+
+        sInsertEmployee = sInsertEmployeeReset
+
+    dbConnection.commit()
+    print(f"Rows Loaded: {iRows}")
+
+
+print(f"{'Employee name':<20} {'year':<5} {'earnings':>15} {'minimum':>15} {'include':>15}")
+for row in dbCursor.fetchall():
+
+    fResult = ""
+
+    if row[2] >= row[-1]: fResult = "Yes"
+    else: fResult = "No"
+    '''
+    file1 = open("Pay.txt", "r")
+    file2 = open("SocialSecurityMinimum.txt", "r")
+    file3 = open("Employee.txt", "r")
+
+    br = file1.read()
+    brr = file2.read()
+    brrr = file3.read()
+
+    file1.close()
+    file2.close()
+    file3.close()
+
+    destiny_file = open('concatenated.txt', 'w')
+
+    destiny_file.write(br + brr + brr)
+
+    destiny_file(close)
+    '''
